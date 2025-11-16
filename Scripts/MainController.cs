@@ -12,10 +12,6 @@ using Godot;
 using Newtonsoft.Json;
 using static DeathLinkipelago.Scripts.DeathTracker;
 using Environment = System.Environment;
-//Discord webhook support
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DeathLinkipelago.Scripts;
 
@@ -36,11 +32,7 @@ public partial class MainController : Node
         "I fell like some of these messages are too long, bah, it'll be fineeee~~~"
     ]; // totally not referencing dbza at all (total of 3 times) 
 
-    // Discord webhook support
     public static ApClient Client;
-    public static readonly object DeathFileLock = new();
-    private static readonly System.Net.Http.HttpClient SharedHttpClient = new();
-    // public static ApClient Client;
     public static Config Config;
     public static ConcurrentDictionary<string, int> DeathCounter = [];
     public static double LastSave;
@@ -78,66 +70,6 @@ public partial class MainController : Node
     [Export] private LifeShopTable _LifeShop;
     [Export] private Login _Login;
     [Export] public DeathTracker Tracker;
-
-    private static string GetWebhookUrl()
-    {
-        // 1) check SaveDir/webhook.txt
-        var file = $"{SaveDir}/webhook.txt";
-        if (File.Exists(file))
-        {
-            try
-            {
-                var t = File.ReadAllText(file).Trim();
-                if (!string.IsNullOrEmpty(t)) return t;
-            }
-            catch { /* ignore */ }
-        }
-        // 2) check environment variable
-        var env = Environment.GetEnvironmentVariable("DEATHLINK_WEBHOOK");
-        if (!string.IsNullOrWhiteSpace(env)) return env.Trim();
-        return null;
-    }
-    private static async Task SendWebhookAsync(string webhookUrl, string message)
-    {
-        if (string.IsNullOrWhiteSpace(webhookUrl)) return;
-        try
-        {
-            var payload = new { content = message };
-            var json = JsonConvert.SerializeObject(payload);
-            using var content = new StringContent(json, Encoding.UTF8, "application/json");
-            // SharedHttpClient is reused to avoid socket exhaustion
-            var response = await SharedHttpClient.PostAsync(webhookUrl, content);
-            // optionally: response.EnsureSuccessStatusCode(); but swallow errors for robustness
-        }
-        catch
-        {
-            // swallow any network exceptions (do not crash the client)
-        }
-    }
-    public static void WriteDeathStatsToFile()
-    {
-        lock (DeathFileLock)
-        {
-            try
-            {
-                var total = DeathCounter.Values.Sum();
-                var top = DeathCounter.OrderByDescending(kv => kv.Value).FirstOrDefault();
-                var obj = new
-                {
-                    totalDeaths = total,
-                    playerDeaths = DeathCounter.ToDictionary(kv => kv.Key, kv => kv.Value),
-                    topPlayer = top.Key ?? "",
-                    topPlayerDeaths = top.Value
-                };
-                File.WriteAllText($"{SaveDir}/deathStats.json",
-                    JsonConvert.SerializeObject(obj, Formatting.Indented));
-            }
-            catch
-            {
-                // do not fail the program on I/O errors
-            }
-        }
-    }
 
     public override void _EnterTree()
     {
@@ -391,23 +323,6 @@ public partial class MainController : Node
         DeathCounter.TryAdd(source, 0);
         DeathCounter[source]++;
         NextLifeCoin = Config.SecondsPerLifeCoin;
-		
-        // signal that we changed (existing logic uses this flag)
-        HasChangedSinceLastSave = true;
-        // 1) write the death stats JSON (synchronous file write but locked)
-        WriteDeathStatsToFile();
-        // 2) send a webhook, but run the HTTP call asynchronously so we don't block the main thread
-        var webhook = GetWebhookUrl();
-        if (!string.IsNullOrWhiteSpace(webhook))
-        {
-            // keep posted message short and informative
-            var totalDeaths = DeathCounter.Values.Sum();
-            var top = DeathCounter.OrderByDescending(kv => kv.Value).FirstOrDefault();
-            var topInfo = top.Key == null ? "N/A" : $"{top.Key} ({top.Value})";
-            var message = $"{source} has died! Total deaths: {totalDeaths}. Top: {topInfo}";
-            // fire-and-forget, swallow exceptions inside SendWebhookAsync
-            _ = Task.Run(() => SendWebhookAsync(webhook, message));
-        }
     }
 
     public void Disconnect() => _Login.TryDisconnection();

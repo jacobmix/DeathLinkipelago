@@ -61,32 +61,6 @@ public partial class Login : Control
         };
 
         _Login.Pressed += TryConnection;
-        // -------------------------
-        // Auto-connect using command-line arguments
-        // Usage (positional): <address> <port> <password> <slot>
-        // Example:
-        // DeathLinkipelago.exe my.ap.server 38281 mypass PlayerSlot
-        // -------------------------
-        try
-        {
-            var args = OS.GetCmdlineArgs();
-            if (args != null && args.Length >= 4)
-            {
-                // positional args: address, port, password, slot
-                Address = args[0];
-                if (int.TryParse(args[1], out var p)) PortField = p;
-                Password = args[2];
-                Slot = args[3];
-                // optional: additional args after slot are ignored
-                // auto attempt connect
-                // small delay is not necessary; TryConnection already handles background connecting
-                TryConnection();
-            }
-        }
-        catch
-        {
-            // ignore any unexpected errors reading args; keep manual UI behavior
-        }
     }
 
     public void TryConnection()
