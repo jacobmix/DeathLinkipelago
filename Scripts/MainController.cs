@@ -401,10 +401,32 @@ public partial class MainController : Node
         if (!string.IsNullOrWhiteSpace(webhook))
         {
             // keep posted message short and informative
-            var totalDeaths = DeathCounter.Values.Sum();
-            var top = DeathCounter.OrderByDescending(kv => kv.Value).FirstOrDefault();
-            var topInfo = top.Key == null ? "N/A" : $"{top.Key} ({top.Value})";
-            var message = $"{source} has died! Total deaths: {totalDeaths}. Top: {topInfo}";
+			var totalDeaths = DeathCounter.Values.Sum();
+			var top = DeathCounter.OrderByDescending(kv => kv.Value).FirstOrDefault();
+			string topPlayerName = top.Key ?? "N/A";
+			int topDeaths = top.Value;
+			
+			// Remove redundant alias if it's the same as slot name
+			string CleanName(string name)
+			{
+				if (string.IsNullOrWhiteSpace(name)) return "";
+				var idx = name.IndexOf('(');
+				if (idx > 0 && name.EndsWith(")"))
+				{
+					var alias = name.Substring(idx + 1, name.Length - idx - 2);
+					var slot = name.Substring(0, idx).Trim();
+					if (alias == slot) return slot; // remove redundant alias
+				}
+				return name;
+			}
+			
+			string sourceName = CleanName(source);
+			string topName = CleanName(topPlayerName);
+			
+			string message = 
+				$"💀 {sourceName} has died! They've died a total of {DeathCounter[source]} times.\n" +
+				$"📊 Total deaths sent by everyone in the multiworld: {totalDeaths}\n" +
+				$"🏆 Player with the most deaths is: {topName}. With: {topDeaths}";
             // fire-and-forget, swallow exceptions inside SendWebhookAsync
             _ = Task.Run(() => SendWebhookAsync(webhook, message));
         }
