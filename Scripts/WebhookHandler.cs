@@ -25,11 +25,12 @@ namespace DeathLinkipelago.Scripts
 			int totalDeaths = MainController.DeathCounter.Values.Sum();
 			int topDeaths = MainController.DeathCounter.Values.DefaultIfEmpty(0).Max();
 			string topPlayer = MainController.DeathCounter.FirstOrDefault(kv => kv.Value == topDeaths).Key ?? "N/A";
+			string displayTopName = CleanPlayerName(topPlayer);
 
 			string message =
-				$"{displayName} has died! Total deaths: {playerDeaths}.\n" +
-				$"Total deaths in multiworld: {totalDeaths}\n" +
-				$"Top player: {topPlayer} with {topDeaths} deaths";
+				$"💀 {displayName} has died! Total deaths: {playerDeaths}.\n" +
+				$"📊 Total deaths in multiworld: {totalDeaths}\n" +
+				$"🏆Top player: {displayTopName} with {topDeaths} deaths";
 
 			EnqueueMessage(message);
 		}
@@ -78,10 +79,25 @@ namespace DeathLinkipelago.Scripts
 
 		private static string CleanPlayerName(string rawName)
 		{
-			// Remove slot info if present
-			int parenIndex = rawName.IndexOf('(');
-			if (parenIndex > 0) return rawName.Substring(0, parenIndex).Trim();
-			return rawName;
+			if (string.IsNullOrWhiteSpace(rawName))
+				return "";
+
+			int idx = rawName.IndexOf('(');
+
+			// No alias present → return as-is
+			if (idx <= 0 || !rawName.EndsWith(")"))
+				return rawName.Trim();
+
+			// Extract slot and alias
+			string slot = rawName.Substring(0, idx).Trim();
+			string alias = rawName.Substring(idx + 1, rawName.Length - idx - 2).Trim();
+
+			// Remove alias only if it is identical to the slot name
+			if (string.Equals(slot, alias, StringComparison.Ordinal))
+				return slot;
+
+			// Keep full name if alias is meaningful
+			return rawName.Trim();
 		}
 	}
 }
