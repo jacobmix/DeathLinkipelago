@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://mdoa55dmcvm2"]
+[gd_scene load_steps=13 format=3 uid="uid://mdoa55dmcvm2"]
 
 [ext_resource type="Script" uid="uid://bmnyyh64t4kr0" path="res://Scripts/MainController.cs" id="1_r150o"]
 [ext_resource type="Theme" uid="uid://doy8rp1q74ye0" path="res://Resources/MainUITheme.tres" id="2_idj7w"]
@@ -10,7 +10,8 @@
 [ext_resource type="Script" uid="uid://cmddw8jxil8uo" path="res://Scripts/Tables/LifeShopTable.cs" id="6_50glp"]
 [ext_resource type="Script" uid="uid://bfanr1p00a0br" path="res://Scripts/Charts/DeathChart.cs" id="6_vy5pj"]
 [ext_resource type="FontFile" uid="uid://dlg8eleo800rl" path="res://Assets/Font/CascadiaMono.ttf" id="7_bmxlf"]
-[ext_resource type="Script" uid="uid://8lnrr3qsbjfq" path="res://Scripts/Charts/BlameChart.cs" id="8_4kpch"]
+[ext_resource type="Script" uid="uid://dw3hqb1ejrih" path="res://Scripts/Charts/BlameChart.cs" id="8_4kpch"]
+[ext_resource type="Script" uid="uid://14n4nsynrced" path="res://Scenes/Webhook.cs" id="11_grg3l"]
 
 [node name="PanelContainer" type="PanelContainer" node_paths=PackedStringArray("_Scenes", "_FunnyButton", "_Inventory", "_Deaths", "_GrassStatus", "_LifeCoinStatus", "_SaveStatus", "_ShopLevel", "_ShopItems", "_DeathShop", "_LifeShop", "_Login", "Tracker")]
 anchors_preset = 15
@@ -130,9 +131,10 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme = ExtResource("2_idj7w")
 tab_alignment = 1
-current_tab = 0
+current_tab = 2
 
 [node name="Info" type="ScrollContainer" parent="Deathlinkipelago"]
+visible = false
 layout_mode = 2
 metadata/_tab_index = 0
 
@@ -172,7 +174,6 @@ horizontal_alignment = 1
 [node name="Inventory" type="FoldableContainer" parent="Deathlinkipelago/Info/Info"]
 layout_mode = 2
 theme = ExtResource("2_idj7w")
-text = "Inventory"
 title_alignment = 1
 
 [node name="RichTextLabel" type="RichTextLabel" parent="Deathlinkipelago/Info/Info/Inventory"]
@@ -188,7 +189,6 @@ _Columns = Array[String](["Item Name", "Stock", "Used", "Total"])
 [node name="Death Tracker" type="FoldableContainer" parent="Deathlinkipelago/Info/Info" node_paths=PackedStringArray("Info", "Chart", "BlamePi")]
 layout_mode = 2
 theme = ExtResource("2_idj7w")
-text = "Death Tracker"
 title_alignment = 1
 script = ExtResource("5_bmxlf")
 Info = NodePath("VBoxContainer/Label2")
@@ -252,7 +252,6 @@ layout_mode = 2
 [node name="LifeShop" type="FoldableContainer" parent="Deathlinkipelago/Shop/Death Shop"]
 layout_mode = 2
 theme = ExtResource("2_idj7w")
-text = "Life Shop"
 title_alignment = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Deathlinkipelago/Shop/Death Shop/LifeShop"]
@@ -281,7 +280,6 @@ _Columns = Array[String](["", "Item"])
 [node name="DeathShop" type="FoldableContainer" parent="Deathlinkipelago/Shop/Death Shop"]
 layout_mode = 2
 theme = ExtResource("2_idj7w")
-text = "Death Shop"
 title_alignment = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Deathlinkipelago/Shop/Death Shop/DeathShop"]
@@ -324,10 +322,113 @@ script = ExtResource("5_jw32o")
 _Main = NodePath("../../../../../..")
 _Columns = Array[String](["", "Item #", "Item", "Slot", "Game", "Priority"])
 
+[node name="Webhook" type="ScrollContainer" parent="Deathlinkipelago"]
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="Webhook" type="VBoxContainer" parent="Deathlinkipelago/Webhook"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 7
+script = ExtResource("11_grg3l")
+
+[node name="HSeparator" type="HSeparator" parent="Deathlinkipelago/Webhook/Webhook"]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Deathlinkipelago/Webhook/Webhook"]
+layout_mode = 2
+text = "Discord Webhook Settings"
+horizontal_alignment = 1
+
+[node name="WebhookUrlInput" type="LineEdit" parent="Deathlinkipelago/Webhook/Webhook"]
+layout_mode = 2
+placeholder_text = "Webhook URL"
+alignment = 1
+
+[node name="HSeparator2" type="HSeparator" parent="Deathlinkipelago/Webhook/Webhook"]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+
+[node name="FlowContainer" type="HFlowContainer" parent="Deathlinkipelago/Webhook/Webhook"]
+layout_mode = 2
+alignment = 1
+last_wrap_alignment = 1
+
+[node name="SendProgressionCheck" type="CheckBox" parent="Deathlinkipelago/Webhook/Webhook/FlowContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Progression"
+
+[node name="SendUsefulCheck" type="CheckBox" parent="Deathlinkipelago/Webhook/Webhook/FlowContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Useful"
+
+[node name="SendJunkCheck" type="CheckBox" parent="Deathlinkipelago/Webhook/Webhook/FlowContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Junk"
+
+[node name="SendTrapCheck" type="CheckBox" parent="Deathlinkipelago/Webhook/Webhook/FlowContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Trap"
+
+[node name="SendExcludedCheck" type="CheckBox" parent="Deathlinkipelago/Webhook/Webhook/FlowContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Excluded"
+
+[node name="SendHintsCheck" type="CheckBox" parent="Deathlinkipelago/Webhook/Webhook/FlowContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Hints"
+
+[node name="SendChatCheck" type="CheckBox" parent="Deathlinkipelago/Webhook/Webhook/FlowContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Chat"
+
+[node name="SendJoinLeaveCheck" type="CheckBox" parent="Deathlinkipelago/Webhook/Webhook/FlowContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Join/Leave"
+
+[node name="SendGoalCheck" type="CheckBox" parent="Deathlinkipelago/Webhook/Webhook/FlowContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Goal"
+
+[node name="SendFinishCheck" type="CheckBox" parent="Deathlinkipelago/Webhook/Webhook/FlowContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Finish"
+
+[node name="SendDeathsCheck" type="CheckBox" parent="Deathlinkipelago/Webhook/Webhook/FlowContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Deaths"
+
+[node name="HSeparator3" type="HSeparator" parent="Deathlinkipelago/Webhook/Webhook"]
+layout_mode = 2
+
+[node name="ConnectButton" type="Button" parent="Deathlinkipelago/Webhook/Webhook"]
+modulate = Color(1, 0.65098, 0.65098, 1)
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2_idj7w")
+text = "Connect Webhook"
+
+[node name="StatusLabel" type="Label" parent="Deathlinkipelago/Webhook/Webhook"]
+layout_mode = 2
+text = "Status: Disconnected"
+
 [node name="Credits" type="ScrollContainer" parent="Deathlinkipelago"]
 visible = false
 layout_mode = 2
-metadata/_tab_index = 2
+metadata/_tab_index = 3
 
 [node name="MarginContainer" type="MarginContainer" parent="Deathlinkipelago/Credits"]
 layout_mode = 2
